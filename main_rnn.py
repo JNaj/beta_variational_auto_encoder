@@ -30,7 +30,7 @@ BATCH_SIZE = 50
 #LEN_EXAMPLES = 38400
 LEN_EXAMPLES = 2000
 # Net parameters
-Z_DIM, H_DIM = 30, 400
+Z_DIM, H_DIM = 20, 400
 FS = 8000
 
 # %% Importing DATASET
@@ -66,7 +66,6 @@ DATA_LOADER = torch.utils.data.DataLoader(dataset=DATASET,
                                           shuffle=True)
 
 # %% Saving original image
-FIXED_INDEX = randint(BATCH_SIZE)
 
 # Saving an item from the dataset to debug
 DATA_ITER = iter(DATA_LOADER)
@@ -103,8 +102,7 @@ if torch.cuda.is_available():
 OPTIMIZER = torch.optim.Adam(betaVAE.parameters(), lr=0.001)
 
 ITER_PER_EPOCH = len(DATASET)/BATCH_SIZE
-NB_EPOCH = 1
-SOUND_LENGTH = np.shape(DATASET.__getitem__(9)[0])[0]
+NB_EPOCH = 5
 
 # %%
 """ TRAINING """
@@ -127,9 +125,8 @@ for epoch in range(NB_EPOCH):
         out, [yt, st], mu, log_var = betaVAE(images)
 
         # Compute reconstruction loss and KL-divergence
-        reconst_loss = -0.5*N_FFT*batch_size*torch.sum(2*np.pi*log_var)
+        reconst_loss = -0.5*batch_size*N_FFT*torch.sum(2*np.pi*log_var)
         reconst_loss -= torch.sum(torch.sum((images-out).pow(2))/((2*log_var.exp())))
-#        #reconst_loss /= (BATCH_SIZE*SOUND_LENGTH)
 #        reconst_loss = F.binary_cross_entropy(out, images, size_average=True)
 
         kl_divergence = torch.sum(0.5 * (mu**2
@@ -162,24 +159,18 @@ for epoch in range(NB_EPOCH):
                                  './data/spectro/reconst_images_%d.png' %(epoch+1))
 
 # %% SAMPLING FROM LATENT SPACE
-FIXED_Z = zdim_analysis(BATCH_SIZE, Z_DIM, 2, 0, 10)
-FIXED_Z = to_var(torch.Tensor(FIXED_Z.contiguous()))
-FIXED_Z = FIXED_Z.repeat(NB_FEN, 1)
-FIXED_Z = FIXED_Z.view(NB_FEN, BATCH_SIZE, Z_DIM)
+for i in xrange(Z_DIM):
+    Z_DIM_SEL = i+1
+    FIXED_Z = zdim_analysis(BATCH_SIZE, Z_DIM, Z_DIM_SEL, 0, 10)
+    FIXED_Z = to_var(torch.Tensor(FIXED_Z.contiguous()))
+    FIXED_Z = FIXED_Z.repeat(NB_FEN, 1)
+    FIXED_Z = FIXED_Z.view(NB_FEN, BATCH_SIZE, Z_DIM)
 
-# Sampling from model, reconstructing from spectrogram
-sampled_image = betaVAE.sample(FIXED_Z)
-sampled_image = sampled_image.transpose(0, 2)
-sampled_image = torch.chunk(sampled_image, N_FFT, 0)
-sampled_image = torch.cat(sampled_image, 2).squeeze()
-sampled_image = sampled_image.view(BATCH_SIZE, 1, N_FFT, -1)
-torchvision.utils.save_image(sampled_image.data.cpu(),
-                             './data/spectro/sampled_images.png')
-
-# %%
-#sampled_image_numpy = sampled_image.data.numpy()
-#sampled_image_numpy = sampled_image_numpy[1, :].reshape(N_FFT/2+1, -1)
-#
-#reconst_sound = DATASET.audio_engine.griffinlim(sampled_image_numpy, N_iter=500)
-#output_name = 'sampled_sound.wav'
-#librosa.output.write_wav('data/SOUND/sampled_sound.wav', reconst_sound,DATASET.Fs)
+    # Sampling from model, reconstructing from spectrogram
+    sampled_image = betaVAE.sample(FIXED_Z)
+    sampled_image = sampled_image.transpose(0, 2)
+    sampled_image = torch.chunk(sampled_image, N_FFT, 0)
+    sampled_image = torch.cat(sampled_image, 2).squeeze()
+    sampled_image = sampled_image.view(BATCH_SIZE, 1, N_FFT, -1)
+    torchvision.utils.save_image(sampled_image.data.cpu(),
+                                 './data/spectro/sampled_images%d.png'%(Z_DIM_SEL))
