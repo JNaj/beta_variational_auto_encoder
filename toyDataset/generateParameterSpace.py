@@ -16,11 +16,11 @@ class parameterSpace:
     def __init__(self):
         # Initialisation
         # paramters:          start, inc, stop
-        self.params = {'f0' : [50, 20, 150],
-                       'PS' : [-0.1, -0.1, -0.2],
+        self.params = {'f0' : [100, 100, 1000],
+                       'PS' : [-0.1, -0.1, -0.9],
                        'PH' : [0, 1 ,1],
                        'inh': [0, 0.1, 1],
-                       'SnR' : [1, 1,1]}
+                       'decay' : [0, 1, 10]}
 
         self.parameter_space = dict.fromkeys(self.params)
         self.N_samples = None # number of samples to generate
@@ -48,7 +48,7 @@ class parameterSpace:
             output_dict_param[i]['PS']  = np.copy(self.permutations[i][1])
             output_dict_param[i]['PH']  = np.copy(self.permutations[i][2])
             output_dict_param[i]['inh'] = np.copy(self.permutations[i][3])
-            output_dict_param[i]['SnR'] = np.copy(self.permutations[i][4])
+            output_dict_param[i]['decay'] = np.copy(self.permutations[i][4])
             
         return output_dict_param
     
@@ -82,7 +82,7 @@ class parameterSpace:
         PS = self.parameter_space['PS']
         PH = self.parameter_space['PH']
         inh= self.parameter_space['inh']
-        SnR= self.parameter_space['SnR']
+        SnR= self.parameter_space['decay']
         
         ### PERMUTATIONS
         self.permutations = np.array(list(it.product(f0, PS, PH, inh, SnR)))

@@ -54,7 +54,7 @@ class toyDataset(Dataset):
         self.spectrograms = [];
         self.cqt = [];
 
-        ### EXERNAL OBJECTS
+        ### EXERNAL OBJECTS
         # Parameter space
         self.paramSpace = gps.parameterSpace()
         self.paramSpace.generate_parameter_space()
@@ -81,15 +81,15 @@ class toyDataset(Dataset):
             - self.sound_data: array containing all the sampled
             - self.spectrograms: array of spectrograms
         """
-        ### INITIALISATION
+        ### INITIALISATION
         # Allocating memory
         self.sound_data = np.zeros((self.paramSpace.N_samples, self.length_sample))
 
         if self.affich:
             print('Rendering dataset...')
-        ### RENDERING DATASET
+        ### RENDERING DATASET
         # --- Audio
-        # for loop on the parameter space
+        # for loop on the parameter space
         for i in xrange(self.paramSpace.N_samples):
             params = self.paramSpace.param_dataset_dict[i]
             self.sound_data[i] = \
@@ -133,10 +133,11 @@ class toyDataset(Dataset):
             data = self.sound_data[index]
         elif self.data == 'cqt':
             data = self.cqt[index].reshape(1, -1)
+            data = data/np.max(data)
             data = np.array(data, dtype=np.dtype('float'))
         else:
-            raise ValueError('Expected spectro or cqt, but got {}. Select a\
-            correct representation name'%(self.data))
+            raise ValueError('Expected spectro or cqt, but got ' + self.data + '. Select a\
+            correct representation name')
         
         return data,param
 

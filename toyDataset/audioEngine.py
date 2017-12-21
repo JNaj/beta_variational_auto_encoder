@@ -30,7 +30,7 @@ class audioEngine:
         slope = params['PS']
         harmonicPresence = params['PH']
         inharmonicity = params['inh']
-        SNR = params['SnR']
+        time_decay = params['decay']
         
         # Sampling parameters
         Fs = self.Fs # Sampling rate
@@ -57,9 +57,13 @@ class audioEngine:
         
         for k in range(n_modes-1):
             x = x + amp[k]*np.sin(2*np.pi*freq[k]*t)
+            
+        # time decay
+        decay_signal = np.exp(-time_decay*t)
+        x = x*decay_signal
                 
         
-        ### FORMATTING
+        ### FORMATTING
         y = x
         y = y/max(y)
         y = np.ndarray.astype(y, np.float,copy=False)
