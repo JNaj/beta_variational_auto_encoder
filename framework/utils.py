@@ -37,7 +37,7 @@ def zdim_analysis(BATCH_SIZE, TOTAL_Z_DIM, Z_DIM, start=0., stop=100.):
     Returns:
         - sampling_data: desired matrix [BATCH_SIZE * TOTAL_Z_DIM]
     """
-    Z_DIM = Z_DIM + 1
+    #Z_DIM = Z_DIM + 1
     BATCH_SIZE, start, stop = BATCH_SIZE, start, stop
     STEP = float(stop-start)/float(BATCH_SIZE-1)
     
